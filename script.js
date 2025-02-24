@@ -16,6 +16,7 @@ let secondCard = null;
 let lockBoard = false;
 let timerInterval;
 let timeLeft = 120; // 2 minutes in seconds
+let isPaused = false; // Track if timer is paused
 
 // Shuffle function
 function shuffle(array) {
@@ -93,7 +94,7 @@ function resetBoard() {
 function checkWinCondition() {
     const flippedCards = document.querySelectorAll('.flipped');
     if (flippedCards.length === cards.length) {
-        clearInterval(timerInterval);
+        stopTimer();
         setTimeout(() => {
             alert("🎉 Congratulations! You matched all cards in time! 🎉");
         }, 500);
@@ -102,20 +103,39 @@ function checkWinCondition() {
 
 // Start the 2-minute timer
 function startTimer() {
-    clearInterval(timerInterval); // Clear any existing timer
+    stopTimer(); // Clear any existing timer
     timeLeft = 120; // Reset time
+    isPaused = false;
     updateTimerDisplay(timeLeft);
+    runTimer();
+}
 
-    timerInterval = setInterval(() => {
+// Run the timer
+function runTimer() {
+    if (isPaused) {
+        isPaused = false;
+        timerInterval = setInterval(countdown, 1000);
+    }
+}
+
+// Stop/Pause the timer
+function stopTimer() {
+    clearInterval(timerInterval);
+    isPaused = true;
+}
+
+// Countdown function
+function countdown() {
+    if (!isPaused) {
         timeLeft--;
         updateTimerDisplay(timeLeft);
 
         if (timeLeft <= 0) {
-            clearInterval(timerInterval);
+            stopTimer();
             alert("⏳ Time's up! Try again.");
             resetGame();
         }
-    }, 1000);
+    }
 }
 
 // Update timer display in "mm:ss" format
@@ -127,16 +147,19 @@ function updateTimerDisplay(seconds) {
 
 // Reset the entire game
 function resetGame() {
-    clearInterval(timerInterval);
+    stopTimer();
     createBoard();
     startTimer();
 }
 
 // Event listeners
 document.getElementById('reset-button').addEventListener('click', resetGame);
+document.getElementById('pause-button').addEventListener('click', stopTimer);
+document.getElementById('resume-button').addEventListener('click', runTimer);
 
 // Initialize the game board and timer when the script loads
 window.onload = () => {
     createBoard();
     startTimer();
 };
+
